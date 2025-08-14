@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+
+  broker:
+    image: lensesio/fast-data-dev:latest
+    container_name: broker
+    hostname: broker
+    ports:
+      - "2181:2181"     # Zookeeper
+      - "3030:3030"     # Lenses UI
+      - "9092:9092"     # Kafka Broker
+      - "8081:8081"     # Schema Registry
+      - "8082:8082"     # REST Proxy
+      - "8083:8083"     # Kafka Connect
+    environment:
+      ADV_HOST: broker
+      RUNTESTS: 0
+    networks:
+      - kafka-net
+
+  kafdrop:
+    image: obsidiandynamics/kafdrop:latest
+    container_name: kafdrop
+    ports:
+      - "9000:9000"
+    environment:
+      KAFKA_BROKERCONNECT: "broker:9092"
+    depends_on:
+      - broker
+    networks:
+      - kafka-net
+
+  node-red:
+    image: nodered/node-red:latest
+    container_name: node-red
+    ports:
+      - "1880:1880"
+    volumes:
+      - ./data:/data  # This will map ./data folder on your host
+    depends_on:
+      - broker
+    networks:
+      - kafka-net
+
+networks:
+  kafka-net:
+    driver: bridge

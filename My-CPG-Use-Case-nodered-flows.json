@@ -1,0 +1,324 @@
+[
+    {
+        "id": "e06079b040e32411",
+        "type": "tab",
+        "label": "Real-Time Sensor Stream Simulation",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "40fe5fbe1e80af47",
+        "type": "tab",
+        "label": "Simulate Batch Metadata",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "c2e758cd616b5232",
+        "type": "tab",
+        "label": "Write Stream Data as Files",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "d7aa4072de27c651",
+        "type": "tab",
+        "label": "Write Batch Data as Files",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "c89523059692d9c2",
+        "type": "kafka-broker",
+        "name": "my-kafka-broker",
+        "hosts": "broker:9092",
+        "selfsign": false,
+        "usetls": false,
+        "cacert": "",
+        "clientcert": "",
+        "privatekey": "",
+        "passphrase": ""
+    },
+    {
+        "id": "2d9f546dc05683fa",
+        "type": "comment",
+        "z": "e06079b040e32411",
+        "name": "WARNING: please check you have started this container with a volume that is mounted to /data\\n otherwise any flow changes are lost when you redeploy or upgrade the container\\n (e.g. upgrade to a more recent node-red docker image).\\n  If you are using named volumes you can ignore this warning.\\n Double click or see info side panel to learn how to start Node-RED in Docker to save your work",
+        "info": "\nTo start docker with a bind mount volume (-v option), for example:\n\n```\ndocker run -it -p 1880:1880 -v /home/user/node_red_data:/data --name mynodered nodered/node-red\n```\n\nwhere `/home/user/node_red_data` is a directory on your host machine where you want to store your flows.\n\nIf you do not do this then you can experiment and redploy flows, but if you restart or upgrade the container the flows will be disconnected and lost. \n\nThey will still exist in a hidden data volume, which can be recovered using standard docker techniques, but that is much more complex than just starting with a named volume as described above.",
+        "x": 350,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "c5d4b29122e51f1a",
+        "type": "inject",
+        "z": "e06079b040e32411",
+        "name": "Stream trigger",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "3",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 160,
+        "y": 300,
+        "wires": [
+            [
+                "371427ca6f107ae5"
+            ]
+        ]
+    },
+    {
+        "id": "371427ca6f107ae5",
+        "type": "function",
+        "z": "e06079b040e32411",
+        "name": "Simulate Sensor Data",
+        "func": "const sensorId = \"sensor-01\";\nconst timestamp = new Date().toISOString();\n\nconst payload = {\n    sensorId,\n    temperature: parseFloat((Math.random() * 10 + 65).toFixed(2)),     // e.g., 65.00 – 75.00\n    humidity: parseFloat((Math.random() * 20 + 40).toFixed(1)),        // e.g., 40.0 – 60.0\n    belt_speed: parseFloat((Math.random() * 1.5 + 0.5).toFixed(2)),    // e.g., 0.50 – 2.00\n    oil_viscosity: parseFloat((Math.random() * 20 + 30).toFixed(1)),   // e.g., 30.0 – 50.0\n    timestamp\n};\n\n// Kafka output requires a topic and a JSON string as payload\nmsg.topic = \"cpg.line1.stream\";\nmsg.payload = JSON.stringify(payload);\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 420,
+        "y": 300,
+        "wires": [
+            [
+                "fc59749fb1c39bfb"
+            ]
+        ]
+    },
+    {
+        "id": "fc59749fb1c39bfb",
+        "type": "kafka",
+        "z": "e06079b040e32411",
+        "brokerUrl": "broker:9092",
+        "topic": "cpg.line1.stream",
+        "partition": "0",
+        "debug": true,
+        "x": 670,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "0cdb460ba6979d97",
+        "type": "inject",
+        "z": "40fe5fbe1e80af47",
+        "name": "Batch trigger",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "10800",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 160,
+        "y": 240,
+        "wires": [
+            [
+                "cdc9a28b5cef6b51"
+            ]
+        ]
+    },
+    {
+        "id": "cdc9a28b5cef6b51",
+        "type": "function",
+        "z": "40fe5fbe1e80af47",
+        "name": "Simulate Batch Metadata",
+        "func": "// Generate a unique batch ID based on timestamp\nconst timestamp = new Date();\nconst batchId = \"BATCH-\" + timestamp.getTime();\n\nconst statuses = [\"started\", \"finished\", \"hold\", \"cancelled\"];\nconst status = statuses[Math.floor(Math.random() * statuses.length)];\n\nconst quantityPlanned = Math.floor(Math.random() * 5000) + 5000; // 5000 – 9999\n\n// Determine quantityProduced based on status\nlet quantityProduced;\nswitch (status) {\n    case \"finished\":\n        quantityProduced = quantityPlanned; // all planned produced\n        break;\n    case \"hold\":\n        quantityProduced = Math.floor(quantityPlanned * (0.4 + Math.random() * 0.3)); // 40–70%\n        break;\n    case \"cancelled\":\n        quantityProduced = Math.floor(quantityPlanned * (0.1 + Math.random() * 0.2)); // 10–30%\n        break;\n    default:\n        quantityProduced = 0; // 'started' or any unknown state\n}\n\nconst batchData = {\n    batchId: batchId,\n    productCode: [\"WALKERS-CRISP-SALT\", \"WALKERS-CRISP-CHEESE\", \"WALKERS-CRISP-ONION\"][Math.floor(Math.random() * 3)],\n    lineId: \"LINE-1\",\n    quantityPlanned: quantityPlanned,\n    quantityProduced: quantityProduced,\n    startTime: timestamp.toISOString(),\n    operator: [\"Alice\", \"Bob\", \"Charlie\", \"Diana\"][Math.floor(Math.random() * 4)],\n    shift: [\"A\", \"B\", \"C\"][Math.floor(Math.random() * 3)],\n    status: status\n};\n\n// Output the message as JSON string for Kafka\nmsg.payload = JSON.stringify(batchData);\nmsg.topic = \"cpg.line1.batches\";\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 430,
+        "y": 240,
+        "wires": [
+            [
+                "d60ffc1a517f718c"
+            ]
+        ]
+    },
+    {
+        "id": "d60ffc1a517f718c",
+        "type": "kafka",
+        "z": "40fe5fbe1e80af47",
+        "brokerUrl": "broker:9092",
+        "topic": "cpg.line1.batches",
+        "partition": "0",
+        "debug": "",
+        "x": 650,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "312c4482ae59944f",
+        "type": "function",
+        "z": "c2e758cd616b5232",
+        "name": "Format Messages",
+        "func": "// Validate and extract\nconst rawTopic = (msg.payload && msg.payload.topic) || \"unknown-topic\";\nconst rawValueStr = (msg.payload && msg.payload.value) || \"{}\";\n\nlet parsedValue;\ntry {\n    parsedValue = JSON.parse(rawValueStr);\n} catch (err) {\n    parsedValue = { error: \"Invalid JSON\", raw: rawValueStr };\n}\n\n// Format date for dynamic file naming\nconst now = new Date();\nconst yyyy = now.getFullYear();\nconst mm = String(now.getMonth() + 1).padStart(2, '0');\nconst dd = String(now.getDate()).padStart(2, '0');\nconst dateStr = `${yyyy}-${mm}-${dd}`;\n\n// Sanitize topic for filesystem compatibility\nconst safeTopic = rawTopic.replace(/\\./g, '-');\n\n// Define file name\nmsg.filename = `/data/${safeTopic}-${dateStr}.jsonl`;\n\n// Format final output line\nconst output = {\n    topic: rawTopic,\n    timestamp: parsedValue.timestamp || msg.payload.timestamp || now.toISOString(),\n    ...parsedValue\n};\n\nmsg.payload = JSON.stringify(output) + \"\\n\";\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 370,
+        "y": 200,
+        "wires": [
+            [
+                "34c784cbe41d462f"
+            ]
+        ]
+    },
+    {
+        "id": "34c784cbe41d462f",
+        "type": "file",
+        "z": "c2e758cd616b5232",
+        "name": "Write to a daily new file",
+        "filename": "filename",
+        "filenameType": "msg",
+        "appendNewline": true,
+        "createDir": false,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 650,
+        "y": 200,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "fcac0442306e2877",
+        "type": "kafka-consumer",
+        "z": "c2e758cd616b5232",
+        "name": "Reading Kafka Topic",
+        "broker": "c89523059692d9c2",
+        "outOfRangeOffset": "earliest",
+        "fromOffset": "latest",
+        "topic": "cpg.line1.stream",
+        "groupid": "",
+        "x": 130,
+        "y": 200,
+        "wires": [
+            [
+                "ed6f08f01d0f1915",
+                "312c4482ae59944f"
+            ]
+        ]
+    },
+    {
+        "id": "ed6f08f01d0f1915",
+        "type": "debug",
+        "z": "c2e758cd616b5232",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 300,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "d02cb8f357362fca",
+        "type": "function",
+        "z": "d7aa4072de27c651",
+        "name": "Format Messages",
+        "func": "// Format date\nconst now = new Date();\nconst yyyy = now.getFullYear();\nconst mm = String(now.getMonth() + 1).padStart(2, '0');\nconst dd = String(now.getDate()).padStart(2, '0');\nconst dateStr = `${yyyy}-${mm}-${dd}`;\n\n// Extract topic safely\nconst rawTopic = msg.payload.topic || \"unknown-batch\";\nconst safeTopic = rawTopic.replace(/\\./g, '-');\n\n// Parse batch JSON\nlet parsedValue = {};\ntry {\n    parsedValue = JSON.parse(msg.payload.value);\n} catch (err) {\n    parsedValue = { error: \"Invalid JSON\", raw: msg.payload.value };\n}\n\n// Set dynamic filename\nmsg.filename = `/data/${safeTopic}-${dateStr}.jsonl`;\n\n// Construct final payload\nmsg.payload = JSON.stringify({\n    topic: rawTopic,\n    timestamp: msg.payload.timestamp || now.toISOString(),\n    ...parsedValue\n}) + \"\\n\";\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 450,
+        "y": 120,
+        "wires": [
+            [
+                "67272496f0133b1b"
+            ]
+        ]
+    },
+    {
+        "id": "67272496f0133b1b",
+        "type": "file",
+        "z": "d7aa4072de27c651",
+        "name": "Write to a daily new file",
+        "filename": "filename",
+        "filenameType": "msg",
+        "appendNewline": true,
+        "createDir": false,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 730,
+        "y": 120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "17e36274ebb9e63e",
+        "type": "kafka-consumer",
+        "z": "d7aa4072de27c651",
+        "name": "Reading Kafka Topic",
+        "broker": "c89523059692d9c2",
+        "outOfRangeOffset": "earliest",
+        "fromOffset": "latest",
+        "topic": "cpg.line1.batches",
+        "groupid": "",
+        "x": 210,
+        "y": 120,
+        "wires": [
+            [
+                "acd0c2933692c460",
+                "d02cb8f357362fca"
+            ]
+        ]
+    },
+    {
+        "id": "acd0c2933692c460",
+        "type": "debug",
+        "z": "d7aa4072de27c651",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 380,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "f302ca96227a9284",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-contrib-kafka-client": "0.1.0",
+            "node-red-contrib-kafka-node-latest": "0.2.0"
+        }
+    }
+]
