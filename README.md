@@ -94,14 +94,15 @@ Transformation includes:
 
 ## 🧪 How to Run
 
-1. **Start local containers** (Kafka, Node-RED)
-2. Simulate data flow
+1. Start local containers (Kafka, Node-RED)
+2. Simulate data flow (Stream, Batch)
 3. Upload daily data files into databricks with [this python code](https://github.com/barisozay79/cpg-kafka-databricks-demo/blob/bc15df0c6ff179149b40e3487d93584faad4da2a/upload_jsonl_to_dbfs.py)
-4. Execute notebooks in order:
+   Before run this file you need to generate a token for your workspace in Azure Databricks.
+5. Execute notebooks in order:
    - [`01-ingest-bronze`](https://github.com/barisozay79/cpg-kafka-databricks-demo/blob/9fcb6c36657fa9f28c4b5721fc79a02925cf9b8e/01-ingest-bronze.py)
    - [`02-transform-silver`](https://github.com/barisozay79/cpg-kafka-databricks-demo/blob/11b782563febe2486326dd92ea69886893f15f6b/02-transform-silver.py)
    - [`03-gold-aggregations`](https://github.com/barisozay79/cpg-kafka-databricks-demo/blob/93475f1c5a4783d2c5c367da8c50cba1e1c42d45/03-gold-aggregations.py)
-5. Query the Gold tables for insights
+6. Query the Gold tables for insights
 
 ---
 
