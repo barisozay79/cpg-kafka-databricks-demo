@@ -23,7 +23,7 @@ Medallion with bronze - silver - gold layers
 ## 💾 Data Sources
 
 ### Docker compose file for containers
-
+https://github.com/barisozay79/cpg-kafka-databricks-demo/blob/ab4d3be9cc0155d9fc8a9df035df866b007db516/docker-compose.yml
 
 ### 1. **Node-RED** (Simulated data publisher)
 - Simulates sensor data and batch metadata (You can upload this json file into node-red as My-CPG-Use-Case-nodered-flows.json to simulate stream and batch data)
