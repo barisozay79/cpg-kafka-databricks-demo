@@ -17,14 +17,13 @@ Monitor real-time and historical performance of a packaging line using simulated
 
 ## 🏗️ Architecture Overview
 
-![Medallion Architecture](A_2D_digital_diagram_illustrates_a_medallion_archi.png)
-
+Medallion with bronze - silver - gold layers
 ---
 
 ## 💾 Data Sources
 
 ### Docker compose file for containers
-Docker Compose file.yml
+
 
 ### 1. **Node-RED** (Simulated data publisher)
 - Simulates sensor data and batch metadata (You can upload this json file into node-red as My-CPG-Use-Case-nodered-flows.json to simulate stream and batch data)
