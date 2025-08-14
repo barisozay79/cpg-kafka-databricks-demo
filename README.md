@@ -23,8 +23,11 @@ Monitor real-time and historical performance of a packaging line using simulated
 
 ## 💾 Data Sources
 
+### Docker compose file for containers
+Docker Compose file.yml
+
 ### 1. **Node-RED** (Simulated data publisher)
-- Simulates sensor data and batch metadata
+- Simulates sensor data and batch metadata (You can upload this json file into node-red as My-CPG-Use-Case-nodered-flows.json to simulate stream and batch data)
 - Streams data to Kafka topics:
   - `cpg.line1.stream`
   - `cpg.line1.batch`
@@ -74,6 +77,7 @@ Transformation includes:
 - Aggregates metrics by `shift` and `status`
 - Calculates total quantity planned, produced, average conveyor speed, etc.
 
+Notebooks for all layers 
 ---
 
 ## 📊 Visualization (Optional)
@@ -90,11 +94,12 @@ Transformation includes:
 
 1. **Start local containers** (Kafka, Node-RED)
 2. Simulate data flow
-3. Execute notebooks in order:
+3. Upload daily data files into databricks with this python code
+4. Execute notebooks in order:
    - `01-ingest-bronze`
    - `02-transform-silver`
    - `03-gold-aggregations`
-4. Query the Gold tables for insights
+5. Query the Gold tables for insights
 
 ---
 
