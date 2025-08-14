@@ -16,8 +16,12 @@ Monitor real-time and historical performance of a packaging line using simulated
 ---
 
 ## 🏗️ Architecture Overview
+- Consuming data from the local node-red stream and batch simulators
+- Writing daily kafka files into local drive as jsonl
+- Upload jsonl files into Azure Databricks
+- Ingesting raw data as bronze delta tables  
+- Medallion with bronze - silver - gold layers
 
-Medallion with bronze - silver - gold layers
 ---
 
 ## 💾 Data Sources
