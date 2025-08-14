@@ -76,7 +76,6 @@ Transformation includes:
 - Aggregates metrics by `shift` and `status`
 - Calculates total quantity planned, produced, average conveyor speed, etc.
 
-Notebooks for all layers 
 ---
 
 ## 📊 Visualization (Optional)
@@ -93,30 +92,12 @@ Notebooks for all layers
 
 1. **Start local containers** (Kafka, Node-RED)
 2. Simulate data flow
-3. Upload daily data files into databricks with this python code
+3. Upload daily data files into databricks with [this python code](https://github.com/barisozay79/cpg-kafka-databricks-demo/blob/bc15df0c6ff179149b40e3487d93584faad4da2a/upload_jsonl_to_dbfs.py)
 4. Execute notebooks in order:
    - `01-ingest-bronze`
    - `02-transform-silver`
    - `03-gold-aggregations`
 5. Query the Gold tables for insights
-
----
-
-## 🗂️ File Structure
-
-```
-├── README.md
-├── docker-compose.yml
-├── notebooks/
-│   ├── 01-ingest-bronze.py
-│   ├── 02-transform-silver.py
-│   ├── 03-gold-aggregations.py
-├── data/
-│   ├── cpg.line1.stream.jsonl
-│   ├── cpg.line1.batch.jsonl
-├── images/
-│   └── A_2D_digital_diagram_illustrates_a_medallion_archi.png
-```
 
 ---
 
